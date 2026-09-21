@@ -277,6 +277,13 @@
         color: var(--accent);
         border-left: 4px solid var(--accent);
       }
+      .flash {
+        transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+      .flash.flash-dismissing {
+        opacity: 0;
+        transform: translateY(-0.5rem);
+      }
 
       /* Formularze i Tabele - Bardziej intuicyjne i przyjazne */
       input,
@@ -477,16 +484,28 @@
 
     <main class="layout-main">
       <!-- Renderowanie flash messages (przystosowane pod listę lub pojedynczy dict) -->
-      {% if request.session.get("flash") %} {% for msg in
-      request.session["flash"] %}
-      <div class="flash {{ msg.type }}">{{ msg.message }}</div>
-      {% endfor %} {% set _ = request.session.pop("flash", None) %} {% elif
-      request.state.flash %}
-      <div class="flash {{ request.state.flash.category }}">
-        {{ request.state.flash.message }}
-      </div>
-      {% endif %} {% block body %}{% endblock %}
+      {% if request.session.get("flash") %}
+        {% for msg in request.session["flash"] %}
+          {% set flash_type = msg.get("type", msg.get("category", "info")) %}
+          <div class="flash {{ flash_type }}">{{ msg.message }}</div>
+        {% endfor %}
+        {% set _ = request.session.pop("flash", None) %}
+      {% elif request.state.flash %}
+        <div class="flash {{ request.state.flash.category }}">
+          {{ request.state.flash.message }}
+        </div>
+      {% endif %}
+      {% block body %}{% endblock %}
     </main>
+
+    <script>
+      document.querySelectorAll(".flash").forEach((message) => {
+        window.setTimeout(() => {
+          message.classList.add("flash-dismissing");
+          window.setTimeout(() => message.remove(), 250);
+        }, 3000);
+      });
+    </script>
 
     <!-- Subtelna animacja przy ładowaniu strony -->
     <style>

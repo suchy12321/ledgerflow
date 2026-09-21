@@ -277,7 +277,7 @@ async def create_client_html(
     session.add(client)
     await session.commit()
     flash(request, f"Klient „{client.name}” dodany.", "success")
-    return RedirectResponse(url=f"/clients/{client.id}", status_code=303)
+    return RedirectResponse(url="/dashboard", status_code=303)
 
 
 @pages.get("/clients/{client_id}/edit", response_class=HTMLResponse)

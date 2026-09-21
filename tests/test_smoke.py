@@ -178,6 +178,24 @@ async def test_dashboard_renders():
 
 
 @pytest.mark.asyncio
+async def test_html_client_form_redirects_to_dashboard_with_flash():
+    """The browser form posts to the HTML handler, not the JSON API."""
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+        r = await c.post(
+            "/clients/new",
+            data={"name": "Dashboard Redirect Test", "kind": "company"},
+            follow_redirects=False,
+        )
+        assert r.status_code == 303
+        assert r.headers["location"] == "/dashboard"
+
+        r = await c.get("/dashboard")
+        assert r.status_code == 200
+        assert "Dashboard Redirect Test" in r.text
+        assert "dodany" in r.text
+
+
+@pytest.mark.asyncio
 async def test_classification_validation_other_on_bad_ai():
     """If AI returns garbage, classification must default to 'other'."""
     from app.schemas.ai import Classification
@@ -199,18 +217,16 @@ async def test_clients_new_routes_win_over_dynamic_uuid():
         assert r.status_code == 200, r.text
         assert "Nowy klient" in r.text
 
-        # POST form -> creates client and redirects to /clients/{uuid}.
+        # POST form -> creates client and returns to the dashboard.
         r = await c.post(
             "/clients/new",
             data={"name": "Routing Test", "kind": "company"},
             follow_redirects=False,
         )
         assert r.status_code == 303, r.text
-        assert r.headers["location"].startswith("/clients/")
-        # Location must be a valid UUID path, not "/clients/new".
-        loc = r.headers["location"]
-        assert loc != "/clients/new"
-        # The created client page should also load.
-        r2 = await c.get(loc)
+        assert r.headers["location"] == "/dashboard"
+
+        # The dashboard should render the newly created client.
+        r2 = await c.get("/dashboard")
         assert r2.status_code == 200, r2.text
         assert "Routing Test".upper() in r2.text.upper() or "ROUTING TEST" in r2.text
