@@ -109,6 +109,22 @@ endblock %} {% block body %}
                 d.type == 'lease' %}📋 {% else %}📎{% endif %}
               </div>
               <div style="flex: 1; min-width: 0">
+                {% if d.id and d.storage_path %}
+                <a
+                  href="/api/documents/{{ d.id }}/view"
+                  target="_blank"
+                  rel="noopener"
+                  class="font-bold truncate"
+                  title="Otwórz dokument w nowej karcie"
+                  style="
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  {{ d.filename or d.type }}
+                </a>
+                {% else %}
                 <div
                   class="font-bold truncate"
                   style="
@@ -119,6 +135,7 @@ endblock %} {% block body %}
                 >
                   {{ d.filename or d.type }}
                 </div>
+                {% endif %}
                 <div class="flex gap-4 flex-wrap muted text-sm mt-1">
                   <span class="pill neutral" style="font-size: 11px"
                     >{{ d.type.replace('_',' ') }}</span
@@ -127,6 +144,15 @@ endblock %} {% block body %}
                   <span>Pewność: {{ "%.0f"|format(d.confidence * 100) }}%</span>
                 </div>
               </div>
+              {% if d.id and d.storage_path %}
+              <a
+                href="/api/documents/{{ d.id }}/download"
+                class="btn btn-sm"
+                download
+              >
+                Pobierz
+              </a>
+              {% endif %}
               {% if d.id %}
               <form
                 method="post"

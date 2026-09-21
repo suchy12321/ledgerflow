@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import uuid
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -18,6 +19,7 @@ os.environ["OCR_PROVIDER"] = "mock"
 
 # Import the app AFTER env vars.
 from app.main import app  # noqa: E402
+from app.config import settings  # noqa: E402
 from app.db import init_db, engine  # noqa: E402
 
 
@@ -193,6 +195,51 @@ async def test_html_client_form_redirects_to_dashboard_with_flash():
         assert r.status_code == 200
         assert "Dashboard Redirect Test" in r.text
         assert "dodany" in r.text
+
+
+@pytest.mark.asyncio
+async def test_document_preview_and_download():
+    from app.db import SessionLocal
+    from app.models.document import Document
+    from app.models.email import Email
+
+    upload_dir = settings.upload_dir / f"document-preview-{uuid.uuid4()}"
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    source = upload_dir / "Faktura.pdf"
+    source.write_bytes(b"%PDF preview test")
+
+    async with SessionLocal() as session:
+        email = Email(
+            sender="office@example.com",
+            subject="Faktura",
+            received_at=datetime(2026, 9, 1, tzinfo=timezone.utc),
+            status="done",
+            external_id=f"preview-{uuid.uuid4()}",
+        )
+        session.add(email)
+        await session.flush()
+        document = Document(
+            email_id=email.id,
+            type="invoice",
+            period="2026-09",
+            confidence=0.95,
+            filename="Faktura.pdf",
+            storage_path=str(source),
+        )
+        session.add(document)
+        await session.commit()
+        document_id = document.id
+
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as c:
+        preview = await c.get(f"/api/documents/{document_id}/view")
+        assert preview.status_code == 200
+        assert preview.content == b"%PDF preview test"
+        assert preview.headers["content-disposition"].startswith("inline")
+
+        download = await c.get(f"/api/documents/{document_id}/download")
+        assert download.status_code == 200
+        assert download.content == b"%PDF preview test"
+        assert download.headers["content-disposition"].startswith("attachment")
 
 
 @pytest.mark.asyncio
