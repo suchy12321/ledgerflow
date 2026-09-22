@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}Klienci — Shop Admin{% endblock %}
+{% block body %}
+<div class="flex justify-between items-start flex-wrap gap-3 mb-5"><div><h1 class="text-3xl font-bold">Klienci</h1><p class="muted">Dopasowanie wiadomości do klienta działa po e-mailu, telefonie, PSID i nazwie.</p></div><a class="btn btn-primary" href="/shop/customers/new">+ Dodaj klienta</a></div><div class="card">{% if customers %}<table><thead><tr><th>Nazwa</th><th>E-mail</th><th>Telefon</th><th>Messenger</th></tr></thead><tbody>{% for customer in customers %}<tr><td><a class="underline bold" href="/shop/customers/{{ customer.id }}/edit">{{ customer.name }}</a></td><td>{{ customer.email or '' }}</td><td>{{ customer.phone or '' }}</td><td class="code small">{{ customer.messenger_psid or '' }}</td></tr>{% endfor %}</tbody></table>{% else %}<div class="empty">Brak klientów.</div>{% endif %}</div>
+{% endblock %}

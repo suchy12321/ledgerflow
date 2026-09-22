@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Zamówienia — Shop Admin{% endblock %}
+{% block body %}
+<div class="mb-5"><h1 class="text-3xl font-bold">Zamówienia</h1><p class="muted">Sprawdź pozycje, stany magazynowe, rachunek i wiadomość do klienta.</p></div>
+{% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+<div class="card">{% if orders %}<table><thead><tr><th>Utworzono</th><th>Klient</th><th>Pozycje</th><th>Brutto</th><th>Status</th><th></th></tr></thead><tbody>
+{% for order in orders %}<tr><td class="small muted">{{ order.created_at.strftime('%Y-%m-%d %H:%M') if order.created_at else '' }}</td><td><a class="underline bold" href="/shop/orders/{{ order.id }}">{{ order.customer.name if order.customer else 'Nieprzypisany' }}</a></td><td>{{ order.lines|length }}</td><td class="bold">{{ '%.2f'|format(order.total_gross) }} PLN</td><td><span class="pill pill-{% if order.status == 'ready_for_approval' %}ok{% elif order.status == 'needs_review' %}warn{% elif order.status == 'approved' %}ok{% elif order.status == 'rejected' %}bad{% else %}neutral{% endif %}">{{ order.status }}</span></td><td><a class="btn btn-secondary btn-sm" href="/shop/orders/{{ order.id }}">Otwórz</a></td></tr>{% endfor %}
+</tbody></table>{% else %}<div class="empty">Brak zamówień.</div>{% endif %}</div>
+{% endblock %}

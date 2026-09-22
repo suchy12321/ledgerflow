@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Shop Admin{% endblock %}
+{% block body %}
+<div class="flex justify-between items-start mb-6 flex-wrap gap-3">
+  <div><h1 class="text-3xl font-bold">Pulpit sklepu</h1><p class="muted">Zamówienia z maila i Messengera w jednym miejscu.</p></div>
+  <div class="flex gap-2"><form action="/shop/inbox/ingest-email" method="post"><button class="btn btn-primary" type="submit">Pobierz e-maile</button></form><form action="/shop/inbox/ingest-messenger-demo" method="post"><button class="btn btn-secondary" type="submit">Demo Messengera</button></form></div>
+</div>
+<div class="grid grid-4 mb-6">
+  <div class="card"><div class="stat-label">Wiadomości</div><div class="stat-value">{{ message_count }}</div><div class="small muted">wszystkie źródła</div></div>
+  <div class="card"><div class="stat-label">Do review</div><div class="stat-value">{{ review_count }}</div><div class="small muted">wymagają decyzji</div></div>
+  <div class="card"><div class="stat-label">Gotowe</div><div class="stat-value">{{ ready_count }}</div><div class="small muted">do zatwierdzenia</div></div>
+  <div class="card"><div class="stat-label">Niski stan</div><div class="stat-value">{{ low_stock }}</div><div class="small muted">produktów ≤ 5 szt.</div></div>
+</div>
+<div class="grid grid-2">
+  <section class="card"><div class="flex justify-between items-center mb-3"><h2 class="text-xl font-bold">Ostatnie wiadomości</h2><a class="btn btn-secondary btn-sm" href="/shop/inbox">Wszystkie</a></div>
+    {% if recent_messages %}<table><thead><tr><th>Źródło</th><th>Nadawca</th><th>Status</th><th>Zamówienie</th></tr></thead><tbody>
+    {% for message in recent_messages %}<tr><td class="bold">{{ message.provider }}</td><td>{{ message.sender }}</td><td><span class="pill pill-neutral">{{ message.status }}</span></td><td>{% if message.order_id %}<a class="underline" href="/shop/orders/{{ message.order_id }}">Otwórz</a>{% else %}<span class="muted">—</span>{% endif %}</td></tr>{% endfor %}
+    </tbody></table>{% else %}<div class="empty">Brak wiadomości. Pobierz demo lub skonfiguruj kanał.</div>{% endif %}
+  </section>
+  <section class="card"><div class="flex justify-between items-center mb-3"><h2 class="text-xl font-bold">Ostatnie zamówienia</h2><a class="btn btn-secondary btn-sm" href="/shop/orders">Wszystkie</a></div>
+    {% if recent_orders %}<table><thead><tr><th>Klient</th><th>Suma</th><th>Status</th></tr></thead><tbody>
+    {% for order in recent_orders %}<tr><td><a class="underline bold" href="/shop/orders/{{ order.id }}">{{ order.customer.name if order.customer else 'Nieprzypisany' }}</a></td><td>{{ '%.2f'|format(order.total_gross) }} PLN</td><td><span class="pill pill-{% if order.status == 'ready_for_approval' %}ok{% elif order.status == 'needs_review' %}warn{% else %}neutral{% endif %}">{{ order.status }}</span></td></tr>{% endfor %}
+    </tbody></table>{% else %}<div class="empty">Zamówienia pojawią się po przetworzeniu wiadomości.</div>{% endif %}
+  </section>
+</div>
+{% endblock %}

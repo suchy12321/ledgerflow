@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Logowanie — Shop Admin{% endblock %}
+{% block body %}
+<div class="max-w-md mx-auto mt-16">
+  <div class="card">
+    <div class="brand mb-2">SHOP ADMIN</div>
+    <h1 class="text-2xl font-bold">Zaloguj się</h1>
+    <p class="muted mb-6">Panel handlowca i zatwierdzania zamówień.</p>
+    {% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+    <form method="post" action="/shop/login">
+      <div class="field"><label for="token">Token administratora</label><input id="token" name="token" type="password" required autofocus /></div>
+      <button class="btn btn-primary w-full" type="submit">Wejdź do panelu</button>
+    </form>
+    <p class="small muted mt-4">Token ustawiasz w SHOP_ADMIN_ADMIN_TOKEN.</p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Produkty — Shop Admin{% endblock %}
+{% block body %}
+<div class="flex justify-between items-start flex-wrap gap-3 mb-5"><div><h1 class="text-3xl font-bold">Produkty</h1><p class="muted">Katalog używany do rozpoznawania i wyceny zamówień.</p></div><a class="btn btn-primary" href="/shop/products/new">+ Dodaj produkt</a></div>
+<div class="card">{% if products %}<table><thead><tr><th>SKU</th><th>Nazwa</th><th>Cena netto</th><th>VAT</th><th>Aktywny</th></tr></thead><tbody>{% for product in products %}<tr><td class="code bold">{{ product.sku }}</td><td>{{ product.name }}<div class="small muted">{{ product.description or '' }}</div></td><td>{{ '%.2f'|format(product.unit_price) }} PLN</td><td>{{ product.vat_rate }}%</td><td>{% if product.active %}<span class="pill pill-ok">tak</span>{% else %}<span class="pill pill-neutral">nie</span>{% endif %}</td><td><a class="btn btn-secondary btn-sm" href="/shop/products/{{ product.id }}/edit">Edytuj</a></td></tr>{% endfor %}</tbody></table>{% else %}<div class="empty">Brak produktów.</div>{% endif %}</div>
+{% endblock %}

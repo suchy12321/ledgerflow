@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Skrzynka — Shop Admin{% endblock %}
+{% block body %}
+<div class="flex justify-between items-start flex-wrap gap-3 mb-5"><div><h1 class="text-3xl font-bold">Skrzynka odbiorcza</h1><p class="muted">E-mail i Messenger trafiają tutaj przed zatwierdzeniem.</p></div><div class="flex gap-2"><form action="/shop/inbox/ingest-email" method="post"><button class="btn btn-primary" type="submit">Pobierz e-maile</button></form><form action="/shop/inbox/ingest-messenger-demo" method="post"><button class="btn btn-secondary" type="submit">Demo Messengera</button></form></div></div>
+{% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+<div class="grid grid-2">
+  <section class="card"><h2 class="text-xl font-bold mb-3">Wiadomości</h2>{% if messages %}<table><thead><tr><th>Źródło</th><th>Nadawca</th><th>Treść</th><th>Status</th><th>Akcja</th></tr></thead><tbody>
+  {% for message in messages %}<tr><td class="bold">{{ message.provider }}</td><td>{{ message.sender }}<div class="small muted">{{ message.subject or '' }}</div></td><td class="small">{{ (message.body or '')[:180] }}</td><td><span class="pill pill-{% if message.status == 'error' %}bad{% elif message.status == 'processing' %}warn{% else %}neutral{% endif %}">{{ message.status }}</span></td><td><a class="btn btn-secondary btn-sm" href="/shop/inbox/{{ message.id }}">Podgląd</a>{% if message.status == 'error' %}<form class="inline" action="/shop/inbox/{{ message.id }}/retry" method="post"><button class="btn btn-danger btn-sm" type="submit">Ponów</button></form>{% endif %}</td></tr>{% endfor %}
+  </tbody></table>{% else %}<div class="empty">Skrzynka jest pusta.</div>{% endif %}</section>
+  <section class="card"><h2 class="text-xl font-bold mb-3">Podgląd</h2>{% if selected %}<div class="small muted mb-2">{{ selected.provider }} · {{ selected.external_id }}</div><p class="whitespace-pre-wrap">{{ selected.body or '(brak treści)' }}</p>{% if selected.order_id %}<div class="divider"></div><a class="btn btn-primary" href="/shop/orders/{{ selected.order_id }}">Otwórz zamówienie</a>{% else %}<p class="muted mt-4">Wiadomość nie ma jeszcze powiązanego zamówienia.</p>{% endif %}{% else %}<div class="empty">Wybierz wiadomość z listy.</div>{% endif %}</section>
+</div>
+{% endblock %}
