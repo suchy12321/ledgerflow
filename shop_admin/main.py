@@ -22,6 +22,7 @@ async def lifespan(_: FastAPI):
 
         async with SessionLocal() as session:
             await seed_demo_data(session)
+            await session.commit()
     yield
     await dispose_engine()
 
